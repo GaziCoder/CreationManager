@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Dict, Any
 from app.config import Config
-from app.models import ProductBrief
+from app.models import ContentBrief
 from app.agents.ingestion_agent import IngestionAgent
 from app.agents.insight_agent import InsightAgent
 from app.agents.prioritization_agent import PrioritizationAgent
@@ -16,7 +16,6 @@ class CreationOrchestrator:
     It triggers each agent sequentially and writes the final brief reports to the outputs directory.
     """
     def __init__(self):
-        # Retrieve key and model configurations
         self.api_key = Config.GEMINI_API_KEY
         self.model_name = Config.GEMINI_MODEL
         self.data_dir = Config.DATA_DIR
@@ -51,22 +50,32 @@ class CreationOrchestrator:
         prioritized_insights = self.prioritization_agent.prioritize(insights)
         
         # Step 4: Planning
-        print("[4/5] Constructing product briefs...")
+        print("[4/5] Constructing content briefs...")
         briefs = self.planning_agent.create_briefs(prioritized_insights)
         
         # Step 5: Review
         print("[5/5] Performing security and quality reviews...")
-        reviewed_briefs: List[ProductBrief] = []
+        reviewed_briefs: List[ContentBrief] = []
         for brief in briefs:
             reviewed_brief = self.review_agent.review(brief)
             reviewed_briefs.append(reviewed_brief)
             
+        # Clear existing output markdown files to keep it clean
+        for old_file in self.output_dir.glob("*.md"):
+            try:
+                old_file.unlink()
+            except Exception:
+                pass
+
         # Write Output files
         print(f"Pipeline complete. Writing {len(reviewed_briefs)} briefs to {self.output_dir}...")
         written_paths = []
         for brief in reviewed_briefs:
             markdown_content = format_brief_to_markdown(brief)
             file_name = f"{brief.id}_{brief.title.lower().replace(' ', '_').replace(':', '')}.md"
+            # Strip invalid file characters
+            for char in ['/', '\\', '?', '*', ':', '|', '"', '<', '>']:
+                file_name = file_name.replace(char, '')
             out_path = self.output_dir / file_name
             with open(out_path, "w", encoding="utf-8") as f:
                 f.write(markdown_content)

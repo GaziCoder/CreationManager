@@ -1,5 +1,5 @@
-Customer: The biggest issue we have is generating the weekly reports. We spend about an hour every Friday exporting the data manually and then building a PDF in another tool. If you could just add an "Export PDF" button that emails or downloads the summary, it would save us a ton of time.
+Subscriber: I really appreciate your channel. The main issue I have is when you build agents, you don't show how to deploy them. It makes it hard to build real apps. Also, in the last video, the audio level dropped midway through the tutorial, and it was hard to hear your voice over the background music.
 
-Interviewer: That makes sense. What other issues are you experiencing?
+Interviewer: That's very helpful feedback. I'll make sure to adjust the audio balancing. What format would you prefer for the deployment tutorial?
 
-Customer: Sometimes the charts take up to 10 seconds to load when we select a wide range of dates. It's not a dealbreaker, but it does disrupt the workflow. Also, we noticed some styling bugs where the text overlaps on small laptop screens.
+Subscriber: A full walkthrough starting from scratch, setting up docker, and running on a cloud provider. Having a clean GitHub repo we can clone and follow along would make a huge difference.

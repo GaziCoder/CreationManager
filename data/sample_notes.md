@@ -1,7 +1,10 @@
-# Brainstorming Session Notes - Q3 Planning
+# Creator Brainstorming & Production Notes - Q3 Channel Strategy
 
-## Main Issues & Opportunities
-- We've heard a lot of feedback about dashboard speed. We should look into virtualizing list rendering or query caching.
-- UI modernization is overdue. Specifically, the payment flow needs a cleaner wizard or progress bar.
-- Export options are currently lacking. Customers are requesting PDF and CSV format downloads for weekly audits.
-- We need to assess a pricing review or a hobbyist tier to capture early-stage startups and indie hackers.
+## Video & Topic Ideas
+- High demand for agent deployment. Maybe a 3-part series on deploying agents using Cloud Run.
+- MCP is trending. Need to explain MCP architecture and build a custom server.
+- Repo link: We must include GitHub repository links in the video description for all future coding tutorials.
+
+## Quality Improvements
+- Audio hum: The new microphone has a low-frequency hum. Need to apply noise gate/eq in post-processing.
+- Pacing: Add chapter markers and slow down when writing actual code blocks.

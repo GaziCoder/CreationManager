@@ -1,17 +1,15 @@
 from typing import List
-from app.models import FeedbackItem, Insight
+from app.models import FeedbackItem
 
 def cluster_feedback(items: List[FeedbackItem]) -> List[List[FeedbackItem]]:
     """
-    Groups feedback items based on basic keyword matching or semantic clustering stubs.
+    Groups feedback items into creator-specific clusters: topic_request, quality_issue, production_suggestion.
     """
-    # Simple keyword clusters for demonstration
     clusters = {}
     categories = {
-        "performance": ["slow", "speed", "performance", "fast", "lag", "crash"],
-        "ui_ux": ["design", "ui", "ux", "button", "color", "look", "interface", "layout"],
-        "feature_request": ["add", "want", "feature", "new", "support", "create"],
-        "billing": ["price", "cost", "billing", "subscribe", "payment", "expensive"]
+        "topic_request": ["tutorial", "video on", "episode on", "deploy", "mcp", "fastmcp", "sdk", "build"],
+        "quality_issue": ["audio", "sound", "hum", "quiet", "pacing", "fast", "slow", "hear"],
+        "production_suggestion": ["github", "repo", "code", "copy-paste", "link", "chapter"]
     }
     
     unclustered = []

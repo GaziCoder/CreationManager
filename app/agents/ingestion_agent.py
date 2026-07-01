@@ -15,16 +15,18 @@ class IngestionAgent:
     def ingest_all(self) -> List[FeedbackItem]:
         feedback_items = []
         
-        # 1. Ingest Comments CSV
+        # 1. Ingest Comments CSV (includes likes/engagement signals)
         csv_path = self.data_dir / "sample_comments.csv"
         if csv_path.exists():
             df = pd.read_csv(csv_path)
             for idx, row in df.iterrows():
                 content = clean_text(remove_pii(str(row.get('comment', ''))))
+                likes = int(row.get('likes', 0))
                 feedback_items.append(FeedbackItem(
                     id=f"comment_{idx}",
                     source="comments",
                     content=content,
+                    likes=likes,
                     metadata={"user": row.get('user', 'anonymous')}
                 ))
                 
@@ -34,7 +36,8 @@ class IngestionAgent:
             with open(notes_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             cleaned_content = clean_text(remove_pii(content))
-            # Split notes by headings for individual items, or ingest as one
+            
+            # Create a feedback item for notes
             feedback_items.append(FeedbackItem(
                 id="notes_1",
                 source="notes",

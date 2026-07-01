@@ -1,7 +1,9 @@
-comment,user
-The application gets extremely slow when rendering more than 100 entries. It almost crashes my browser.,alice99
-Can you please add support for dark mode? The current light theme is blinding at night.,bob_designer
-The checkout page UI is very confusing. I didn't know which button to click to confirm payment.,charlie_ux
-I want a feature to export reports as PDF directly. Currently we have to copy-paste.,delta_reporter
-This tool is too expensive for single developers. Do you have a cheaper tier?,echo_dev
-The dashboard lags when loading the analytics graph.,fox_analyst
+comment,user,likes
+"Great video! Can you do a deep-dive tutorial on building custom MCP servers? That would be so helpful.",dev_juan,42
+"The audio in this episode was extremely quiet. I had to turn my speakers all the way up.",sound_guy_9,15
+"I really want a step-by-step video on how to deploy LLM agents to production. Most tutorials only show local runs.",ai_builder,58
+"Your pacing was way too fast in the coding section. Had to pause every 5 seconds to follow.",learn_fast,23
+"Would love a podcast episode discussing the future of agentic coding and developer jobs.",job_hunter,31
+"Can we get a comparison video between FastMCP and the official python-mcp SDK?",sdk_user,19
+"Audio quality has been a bit inconsistent lately. Pls fix the background hum.",mic_check,8
+"Is there a github repo for this? It's really hard to copy code from the video screen.",copy_paste_dev,64

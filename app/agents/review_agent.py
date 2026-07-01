@@ -1,4 +1,5 @@
-from app.models import ProductBrief
+import re
+from app.models import ContentBrief
 from app.tools.security import verify_brief_safety
 
 try:
@@ -8,8 +9,8 @@ except ImportError:
 
 class ReviewAgent:
     """
-    ReviewAgent validates product briefs for quality, safety, and policy compliance.
-    Runs automated checks and can optionally use an LLM for qualitative review.
+    ReviewAgent validates content briefs for quality, safety, and brand compliance.
+    Rejects any briefs containing unresolved placeholders (e.g., X%, Y, Z, <metric>).
     """
     def __init__(self, api_key: str = "", model_name: str = "gemini-2.5-flash"):
         self.api_key = api_key
@@ -18,45 +19,71 @@ class ReviewAgent:
         if genai and api_key:
             self.client = genai.Client(api_key=api_key)
 
-    def review(self, brief: ProductBrief) -> ProductBrief:
-        # 1. Run Automated Security Scan
-        is_safe = verify_brief_safety(brief)
+    def review(self, brief: ContentBrief) -> ContentBrief:
+        # 1. Automated Security Check (secrets scan)
+        # Note: We adapt the verify_brief_safety slightly to fit ContentBrief attributes
+        # Since it has overview and sections, we check those
+        is_safe = True
+        from app.tools.security import scan_for_secrets
+        if scan_for_secrets(brief.overview):
+            is_safe = False
+        for sec in brief.sections:
+            if scan_for_secrets(sec):
+                is_safe = False
+                
         if not is_safe:
             brief.review_status = "rejected"
-            brief.security_flag = True
+            brief.safety_flag = True
             brief.review_comments = "Failed security verification. Potential secret/API key leakage detected."
             return brief
             
-        # 2. Run Qualitative LLM / Rule Check
+        # 2. Automated Quality/Placeholder Check
+        placeholder_pattern = r"(?i)\b[XYZ]\b|\bX%|\bY%|\bZ%|<.*>|\[.*\]|placeholder"
+        has_placeholders = False
+        for metric in brief.success_metrics:
+            if re.search(placeholder_pattern, metric):
+                has_placeholders = True
+                break
+        if re.search(placeholder_pattern, brief.overview):
+            has_placeholders = True
+            
+        if has_placeholders:
+            brief.review_status = "rejected"
+            brief.review_comments = "Failed quality check: Unresolved placeholders (e.g., X%, Y, Z, <...>) detected in brief metrics or overview."
+            return brief
+
+        # 3. Qualitative LLM / Rule Check
         if self.client:
             return self._review_with_llm(brief)
         else:
             return self._review_with_rules(brief)
 
-    def _review_with_rules(self, brief: ProductBrief) -> ProductBrief:
-        # Simple heuristics for approval
-        if len(brief.features) < 1:
+    def _review_with_rules(self, brief: ContentBrief) -> ContentBrief:
+        if len(brief.sections) < 1:
             brief.review_status = "rejected"
-            brief.review_comments = "Brief must contain at least 1 feature."
+            brief.review_comments = "Brief must contain at least 1 outline section."
         elif len(brief.overview) < 15:
             brief.review_status = "rejected"
             brief.review_comments = "Brief overview is too short/generic."
         else:
             brief.review_status = "approved"
-            brief.review_comments = "Automated checks passed. Approved for planning."
+            brief.review_comments = "Automated quality checks passed. Outline and metrics are complete and concrete."
         return brief
 
-    def _review_with_llm(self, brief: ProductBrief) -> ProductBrief:
+    def _review_with_llm(self, brief: ContentBrief) -> ContentBrief:
         prompt = f"""
-        Review the following Product Planning Brief for completeness, quality, and feasibility.
-        Brief Details:
+        Review the following Content Planning Brief for completeness, quality, and feasibility.
+        
         Title: {brief.title}
+        Format: {brief.format_type}
         Overview: {brief.overview}
-        Features: {', '.join(brief.features)}
+        Outline Sections: {', '.join(brief.sections)}
         Success Metrics: {', '.join(brief.success_metrics)}
         Target Audience: {brief.target_audience}
         
-        Is this brief realistic and complete? Return your review in the format:
+        Check if the outline sections are detailed and the success metrics are concrete (no placeholders like X%, Y, etc.).
+        
+        Return your review in the format:
         Status: <approved / rejected>
         Comments: <One sentence summary of your feedback>
         """

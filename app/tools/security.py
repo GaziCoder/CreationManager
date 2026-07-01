@@ -1,5 +1,5 @@
 import re
-from app.models import ProductBrief
+from app.models import ContentBrief
 
 def scan_for_secrets(text: str) -> bool:
     """
@@ -16,14 +16,14 @@ def scan_for_secrets(text: str) -> bool:
             return True
     return False
 
-def verify_brief_safety(brief: ProductBrief) -> bool:
+def verify_brief_safety(brief: ContentBrief) -> bool:
     """
-    Scans the product brief overview and features to verify no secrets are leaked.
+    Scans the content brief overview and sections to verify no secrets are leaked.
     Returns True if safe, False if unsafe.
     """
     if scan_for_secrets(brief.overview):
         return False
-    for feature in brief.features:
-        if scan_for_secrets(feature):
+    for section in brief.sections:
+        if scan_for_secrets(section):
             return False
     return True

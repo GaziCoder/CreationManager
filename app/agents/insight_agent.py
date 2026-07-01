@@ -2,7 +2,7 @@ import uuid
 from typing import List
 from app.models import FeedbackItem, Insight
 from app.tools.clustering import cluster_feedback
-# Import gemini client if needed
+
 try:
     from google import genai
 except ImportError:
@@ -10,8 +10,8 @@ except ImportError:
 
 class InsightAgent:
     """
-    InsightAgent analyzes clustered feedback items and synthesizes them into distinct, structured Insights.
-    It can use an LLM or keyword rules depending on whether an API key is available.
+    InsightAgent analyzes clustered creator feedback items and synthesizes them into structured Insights.
+    Ensures that backing evidence items are attached for verification.
     """
     def __init__(self, api_key: str = "", model_name: str = "gemini-2.5-flash"):
         self.api_key = api_key
@@ -24,7 +24,6 @@ class InsightAgent:
         if not items:
             return []
             
-        # Group feedback items into clusters first
         clusters = cluster_feedback(items)
         insights = []
         
@@ -32,8 +31,6 @@ class InsightAgent:
             if not cluster:
                 continue
                 
-            # Synthesize insight from cluster
-            # For simplicity, if we have LLM, we use it. Otherwise, we do rule-based synthesis.
             if self.client:
                 insights.append(self._synthesize_with_llm(cluster, idx))
             else:
@@ -46,36 +43,39 @@ class InsightAgent:
         categories = [item.source for item in cluster]
         dominant_category = max(set(categories), key=categories.count)
         
-        # Sample heuristics
-        titles = {
-            "comments": f"User feedback trend on Comments ({idx})",
-            "notes": "Internal brainstorm insights",
-            "transcript": "Customer meeting takeaways"
-        }
-        
-        title = titles.get(dominant_category, f"Synthesized Insight {idx}")
-        # Take a summary or concat first few chars
-        summary_desc = " | ".join([item.content[:60] + "..." for item in cluster[:3]])
-        
+        # Categorize
+        if any(kw in cluster[0].content.lower() for kw in ["audio", "sound", "pacing", "quiet"]):
+            category = "quality_issue"
+            title = "Audio Quality and Pacing Improvements"
+            desc = "Adjust microphones, vocal gain levels, and slow down code walkthrough speed."
+        elif any(kw in cluster[0].content.lower() for kw in ["github", "repo", "code"]):
+            category = "production_suggestion"
+            title = "Provide GitHub Repositories for Tutorials"
+            desc = "Publish clean source code repos in descriptions for all coding walkthroughs."
+        else:
+            category = "topic_request"
+            title = f"Topic Request: {cluster[0].content[:40]}..."
+            desc = f"Viewer interest in: {' | '.join([i.content[:60] for i in cluster[:2]])}"
+            
         return Insight(
             id=f"insight_{uuid.uuid4().hex[:8]}",
             title=title,
-            description=f"Synthesized from {len(cluster)} items: {summary_desc}",
+            description=desc,
             source_ids=sources,
-            category=dominant_category,
-            confidence=0.8
+            category=category,
+            confidence=0.9,
+            evidence_items=cluster
         )
 
     def _synthesize_with_llm(self, cluster: List[FeedbackItem], idx: int) -> Insight:
-        # Construct prompt
-        context = "\n".join([f"- [{item.id}] Source: {item.source} - Content: {item.content}" for item in cluster])
+        context = "\n".join([f"- [{item.id}] Source: {item.source} (Likes: {item.likes}) - Content: {item.content}" for item in cluster])
         prompt = f"""
-        Analyze the following feedback cluster and synthesize it into a single coherent insight.
+        Analyze the following creator audience feedback cluster and synthesize it into a single coherent insight.
         Provide the response in the following format:
-        Title: <A short descriptive title summarizing the trend>
-        Category: <Performance / UI-UX / Feature Request / General>
-        Description: <A paragraph describing what the users want or the main issue, and why it is important>
-        Confidence: <A float between 0.0 and 1.0 indicating how clear the trend is>
+        Title: <Short descriptive title of the content theme / issue / request>
+        Category: <topic_request / quality_issue / production_suggestion>
+        Description: <Clear description of what viewers are requesting or complaining about, and why it matters>
+        Confidence: <A float between 0.0 and 1.0 based on feedback volume and source agreement>
 
         Feedback items:
         {context}
@@ -88,8 +88,7 @@ class InsightAgent:
             )
             text = response.text
             
-            # Simple parser
-            title, category, description, confidence = f"Insight {idx}", "General", "", 0.8
+            title, category, description, confidence = f"Insight {idx}", "topic_request", "", 0.9
             for line in text.split("\n"):
                 if line.startswith("Title:"):
                     title = line.replace("Title:", "").strip()
@@ -112,8 +111,8 @@ class InsightAgent:
                 description=description,
                 source_ids=[item.id for item in cluster],
                 category=category,
-                confidence=confidence
+                confidence=confidence,
+                evidence_items=cluster
             )
-        except Exception as e:
-            # Fallback on failure
+        except Exception:
             return self._synthesize_with_rules(cluster, idx)
