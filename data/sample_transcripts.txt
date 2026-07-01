@@ -1,0 +1,5 @@
+Customer: The biggest issue we have is generating the weekly reports. We spend about an hour every Friday exporting the data manually and then building a PDF in another tool. If you could just add an "Export PDF" button that emails or downloads the summary, it would save us a ton of time.
+
+Interviewer: That makes sense. What other issues are you experiencing?
+
+Customer: Sometimes the charts take up to 10 seconds to load when we select a wide range of dates. It's not a dealbreaker, but it does disrupt the workflow. Also, we noticed some styling bugs where the text overlaps on small laptop screens.

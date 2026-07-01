@@ -1,0 +1,7 @@
+comment,user
+The application gets extremely slow when rendering more than 100 entries. It almost crashes my browser.,alice99
+Can you please add support for dark mode? The current light theme is blinding at night.,bob_designer
+The checkout page UI is very confusing. I didn't know which button to click to confirm payment.,charlie_ux
+I want a feature to export reports as PDF directly. Currently we have to copy-paste.,delta_reporter
+This tool is too expensive for single developers. Do you have a cheaper tier?,echo_dev
+The dashboard lags when loading the analytics graph.,fox_analyst
