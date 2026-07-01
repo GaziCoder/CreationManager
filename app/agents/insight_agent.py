@@ -43,19 +43,17 @@ class InsightAgent:
         categories = [item.source for item in cluster]
         dominant_category = max(set(categories), key=categories.count)
         
-        # Categorize
-        if any(kw in cluster[0].content.lower() for kw in ["audio", "sound", "pacing", "quiet"]):
+        # Simple rule-based extraction from actual text to avoid hardcoded developer details
+        sample_text = cluster[0].content
+        title = f"Theme Request: {sample_text[:40]}..."
+        desc = f"Viewer feedback indicates interest or concerns regarding: {sample_text[:200]}..."
+        
+        if any(kw in sample_text.lower() for kw in ["audio", "sound", "pacing", "quiet"]):
             category = "quality_issue"
-            title = "Audio Quality and Pacing Improvements"
-            desc = "Adjust microphones, vocal gain levels, and slow down code walkthrough speed."
-        elif any(kw in cluster[0].content.lower() for kw in ["github", "repo", "code"]):
+        elif any(kw in sample_text.lower() for kw in ["github", "repo", "code"]):
             category = "production_suggestion"
-            title = "Provide GitHub Repositories for Tutorials"
-            desc = "Publish clean source code repos in descriptions for all coding walkthroughs."
         else:
             category = "topic_request"
-            title = f"Topic Request: {cluster[0].content[:40]}..."
-            desc = f"Viewer interest in: {' | '.join([i.content[:60] for i in cluster[:2]])}"
             
         return Insight(
             id=f"insight_{uuid.uuid4().hex[:8]}",
@@ -63,7 +61,7 @@ class InsightAgent:
             description=desc,
             source_ids=sources,
             category=category,
-            confidence=0.9,
+            confidence=0.5,
             evidence_items=cluster
         )
 
@@ -114,5 +112,6 @@ class InsightAgent:
                 confidence=confidence,
                 evidence_items=cluster
             )
-        except Exception:
-            return self._synthesize_with_rules(cluster, idx)
+        except Exception as e:
+            # Raise the exception rather than silently swallowing it with incorrect developer fallbacks
+            raise RuntimeError(f"InsightAgent API request failed: {str(e)}")

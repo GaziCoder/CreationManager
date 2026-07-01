@@ -30,49 +30,23 @@ class PlanningAgent:
 
     def _create_brief_with_rules(self, p_insight: PrioritizedInsight) -> ContentBrief:
         insight = p_insight.insight
-        
-        # Prepare evidence quotes
         evidence_comments = [item.content for item in insight.evidence_items]
         
-        # Creator-specific static data
-        cat = insight.category.lower()
-        if "quality" in cat:
-            title = "Channel Audio Audit & Pacing Overhaul"
-            format_type = "Production Improvement Checklist"
-            overview = "Action plan to clean up studio audio background hum, balance sound levels, and optimize code walkthrough pacing."
-            sections = [
-                "Vocal EQ & Noise Gate setup: Calibrate post-processing chain to suppress studio fan noise below -55dB.",
-                "Pacing checkpoints: Inject brief chapter breaks before major coding blocks and slow speed to 80% default during live typing."
-            ]
-            success_metrics = [
-                "Reduce viewer complaints about audio hum to zero in next 3 uploads.",
-                "Maintain audience retention above 50% during the coding walkthrough sections."
-            ]
-        elif "production" in cat:
-            title = "Establishing Tutorial Code Repository Workflow"
-            format_type = "Internal Operations Brief"
-            overview = "Creating a structured template and publishing workflow for GitHub companion repositories linked in tutorial descriptions."
-            sections = [
-                "Repo Template design: Standardize directories with app/, data/, outputs/, and setup guides.",
-                "Publishing checklists: Add repo creation as a pre-upload step in the editing checklist."
-            ]
-            success_metrics = [
-                "Include a working GitHub link in 100% of upcoming development tutorials.",
-                "Achieve a 15% click-through rate on description repository links."
-            ]
-        else:
-            title = f"Deep Dive: {insight.title}"
-            format_type = "Video Tutorial & Outline"
-            overview = f"Full tutorial addressing developer demand for: {insight.description}."
-            sections = [
-                "Introduction: Introduce the problem and explain architecture diagrams.",
-                "Step-by-Step Code Walkthrough: Code the core structure live with slow pacing.",
-                "Deployment: Deploy code to production environment (Cloud Run / Vercel)."
-            ]
-            success_metrics = [
-                "Reach 10,000 views within 14 days of publication.",
-                "Gain 150+ GitHub repository stars within week 1."
-            ]
+        # Build dynamic outline based on actual insight content
+        title = f"Content Plan: {insight.title}"
+        format_type = "Animated Storytelling / Vlog" if "topic" in insight.category.lower() else "Channel Improvement Tweak"
+        overview = insight.description
+        
+        sections = [
+            f"Segment 1: Hook and introduction addressing {insight.title}.",
+            "Segment 2: Storytelling walkthrough based on audience comments.",
+            "Segment 3: Call to action promoting audience retention and feedback."
+        ]
+        
+        success_metrics = [
+            "Maintain audience retention above 65% for the entire duration.",
+            "Gather at least 15,000 comments within the first 48 hours."
+        ]
 
         return ContentBrief(
             id=f"brief_{uuid.uuid4().hex[:8]}",
@@ -80,7 +54,7 @@ class PlanningAgent:
             format_type=format_type,
             overview=overview,
             sections=sections,
-            target_audience="Developers and Tech Subscribers",
+            target_audience="Subscribers and Tech Community",
             success_metrics=success_metrics,
             linked_insight_ids=[insight.id],
             priority_score=p_insight.priority_score,
@@ -172,5 +146,5 @@ class PlanningAgent:
                 ranking_rationale=p_insight.ranking_rationale,
                 evidence_comments=evidence_comments
             )
-        except Exception:
-            return self._create_brief_with_rules(p_insight)
+        except Exception as e:
+            raise RuntimeError(f"PlanningAgent API request failed: {str(e)}")

@@ -35,13 +35,10 @@ class PrioritizationAgent:
         # Static effort scoring based on category
         cat = insight.category.lower()
         if "quality" in cat:
-            # Fix audio hum or voice levels is relatively low effort
             effort = 3.0
         elif "production" in cat:
-            # Publishing github repos is low-to-medium effort
             effort = 4.0
         else:
-            # Building tutorial videos is high effort
             effort = 7.0
             
         return prioritize_insight_item(insight, impact=0.0, effort=effort)
@@ -77,5 +74,5 @@ class PrioritizationAgent:
                         pass
                     
             return prioritize_insight_item(insight, impact=0.0, effort=effort)
-        except Exception:
-            return self._prioritize_with_rules(insight)
+        except Exception as e:
+            raise RuntimeError(f"PrioritizationAgent API request failed: {str(e)}")

@@ -21,8 +21,6 @@ class ReviewAgent:
 
     def review(self, brief: ContentBrief) -> ContentBrief:
         # 1. Automated Security Check (secrets scan)
-        # Note: We adapt the verify_brief_safety slightly to fit ContentBrief attributes
-        # Since it has overview and sections, we check those
         is_safe = True
         from app.tools.security import scan_for_secrets
         if scan_for_secrets(brief.overview):
@@ -107,5 +105,5 @@ class ReviewAgent:
             brief.review_status = status
             brief.review_comments = comments
             return brief
-        except Exception:
-            return self._review_with_rules(brief)
+        except Exception as e:
+            raise RuntimeError(f"ReviewAgent API request failed: {str(e)}")

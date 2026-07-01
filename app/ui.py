@@ -95,7 +95,7 @@ button.primary:hover {
 }
 """
 
-with gr.Blocks(theme=gr.themes.Soft(), css=custom_css) as demo:
+with gr.Blocks() as demo:
     gr.HTML(
         """
         <div style="text-align: center; margin-bottom: 20px;">
@@ -146,4 +146,4 @@ with gr.Blocks(theme=gr.themes.Soft(), css=custom_css) as demo:
 
 if __name__ == "__main__":
     # Launch on local server
-    demo.launch(server_name="127.0.0.1", server_port=7860)
+    demo.launch(server_name="127.0.0.1", server_port=7860, theme=gr.themes.Soft(), css=custom_css)
